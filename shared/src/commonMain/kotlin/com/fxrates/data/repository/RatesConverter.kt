@@ -1,5 +1,6 @@
 package com.fxrates.data.repository
 
+import com.fxrates.data.remote.dto.LatestRatesDto
 import com.fxrates.data.remote.dto.TimeSeriesDto
 import com.fxrates.domain.model.CurrencyRate
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
@@ -27,6 +28,26 @@ class RatesConverter {
                     date = LocalDate.parse(latestDate),
                     rate = rate.toDecimal(),
                     previousRate = previous[code]?.toDecimal(),
+                )
+            }
+            .sortedBy(CurrencyRate::code)
+    }
+
+    /**
+     * Maps [latest] onto domain rates. A currency with no name in [currencies] is still shown,
+     * under its code. There is no previous quote on this endpoint, so [CurrencyRate.previousRate]
+     * is always `null`.
+     */
+    fun toCurrentRates(latest: LatestRatesDto, currencies: Map<String, String>): List<CurrencyRate> {
+        val date = LocalDate.parse(latest.date)
+        return latest.rates
+            .map { (code, rate) ->
+                CurrencyRate(
+                    code = code,
+                    name = currencies[code] ?: code,
+                    date = date,
+                    rate = rate.toDecimal(),
+                    previousRate = null,
                 )
             }
             .sortedBy(CurrencyRate::code)

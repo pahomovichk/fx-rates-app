@@ -27,6 +27,12 @@ class RatesRepositoryImpl(
         converter.toLatestRates(timeSeries = timeSeries.await(), currencies = currencies.await())
     }
 
+    override suspend fun getCurrentRates(base: String): List<CurrencyRate> = coroutineScope {
+        val currencies = async { api.getCurrencies() }
+        val latest = async { api.getLatest(base = base) }
+        converter.toCurrentRates(latest = latest.await(), currencies = currencies.await())
+    }
+
     private companion object {
 
         const val LOOKBACK_DAYS = 7

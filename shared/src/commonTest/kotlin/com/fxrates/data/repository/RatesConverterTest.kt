@@ -1,5 +1,6 @@
 package com.fxrates.data.repository
 
+import com.fxrates.data.remote.dto.LatestRatesDto
 import com.fxrates.data.remote.dto.TimeSeriesDto
 import com.fxrates.domain.model.CurrencyRate
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
@@ -68,6 +69,40 @@ class RatesConverterTest : FunSpec({
         val timeSeries = TimeSeriesDto(base = "USD", startDate = "", endDate = "", rates = emptyMap())
 
         converter.toLatestRates(timeSeries, currencies = emptyMap()).shouldBeEmpty()
+    }
+
+    test("the current working day keeps the decimal digits and has no previous rate") {
+        val latest = LatestRatesDto(
+            base = "USD",
+            date = "2026-11-03",
+            rates = mapOf("EUR" to 0.89158, "XAU" to 0.0003),
+        )
+
+        val rates = converter.toCurrentRates(latest, currencies = mapOf("EUR" to "Euro"))
+
+        rates shouldHaveSize 2
+        with(rates.first { rate -> rate.code == "EUR" }) {
+            name shouldBe "Euro"
+            date shouldBe LocalDate(2026, 11, 3)
+            rate shouldBe "0.89158".toBigDecimal()
+            previousRate shouldBe null
+        }
+        with(rates.first { rate -> rate.code == "XAU" }) {
+            name shouldBe "XAU"
+            previousRate shouldBe null
+        }
+    }
+
+    test("the current working day's rates are sorted by code") {
+        val latest = LatestRatesDto(
+            base = "USD",
+            date = "2026-11-03",
+            rates = mapOf("JPY" to 157.9, "CHF" to 0.8, "EUR" to 0.89),
+        )
+
+        val codes = converter.toCurrentRates(latest, currencies = emptyMap()).map(CurrencyRate::code)
+
+        codes shouldBe listOf("CHF", "EUR", "JPY")
     }
 
 })
