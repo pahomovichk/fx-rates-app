@@ -3,6 +3,7 @@ package com.fxrates.data.repository
 import com.fxrates.data.remote.dto.LatestRatesDto
 import com.fxrates.data.remote.dto.TimeSeriesDto
 import com.fxrates.domain.model.CurrencyRate
+import com.fxrates.domain.model.RateQuote
 import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import kotlinx.datetime.LocalDate
@@ -51,6 +52,22 @@ class RatesConverter {
                 )
             }
             .sortedBy(CurrencyRate::code)
+    }
+
+    /**
+     * Quotes of [code] only, oldest first. A day without that code is dropped; an empty series
+     * or a series that never mentions [code] is an empty list.
+     */
+    fun toQuotes(timeSeries: TimeSeriesDto, code: String): List<RateQuote> {
+        return timeSeries.rates
+            .mapNotNull { (date, ratesByCode) ->
+                val rate = ratesByCode[code] ?: return@mapNotNull null
+                RateQuote(
+                    date = LocalDate.parse(date),
+                    rate = rate.toDecimal(),
+                )
+            }
+            .sortedBy(RateQuote::date)
     }
 
     // Going through the string keeps the decimal digits the API sent: 0.89158 stays 0.89158

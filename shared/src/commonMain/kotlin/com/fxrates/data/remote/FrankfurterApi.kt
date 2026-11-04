@@ -36,4 +36,21 @@ class FrankfurterApi(
         }.body()
     }
 
+    /**
+     * The rates of [currency] against [base] for every business day from [start] to [end]
+     * inclusive; `null` [end] means "up to the latest available date".
+     */
+    suspend fun getTimeSeriesTo(
+        base: String,
+        start: LocalDate,
+        currency: String,
+        end: LocalDate? = null,
+    ): TimeSeriesDto {
+        val path = "$start..${end ?: ""}"
+        return httpClient.get(path) {
+            parameter("base", base)
+            parameter("symbols", currency)
+        }.body()
+    }
+
 }

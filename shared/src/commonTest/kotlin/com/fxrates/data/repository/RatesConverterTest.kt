@@ -3,6 +3,7 @@ package com.fxrates.data.repository
 import com.fxrates.data.remote.dto.LatestRatesDto
 import com.fxrates.data.remote.dto.TimeSeriesDto
 import com.fxrates.domain.model.CurrencyRate
+import com.fxrates.domain.model.RateQuote
 import com.ionspin.kotlin.bignum.decimal.toBigDecimal
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldBeEmpty
@@ -103,6 +104,85 @@ class RatesConverterTest : FunSpec({
         val codes = converter.toCurrentRates(latest, currencies = emptyMap()).map(CurrencyRate::code)
 
         codes shouldBe listOf("CHF", "EUR", "JPY")
+    }
+
+    test("only the requested currency is kept from a series of every currency") {
+        val timeSeries = TimeSeriesDto(
+            base = "USD",
+            startDate = "2026-10-29",
+            endDate = "2026-11-02",
+            rates = mapOf(
+                "2026-11-02" to mapOf("EUR" to 0.89158, "JPY" to 157.9),
+                "2026-10-29" to mapOf("EUR" to 0.89847, "JPY" to 156.1),
+            ),
+        )
+
+        val quotes = converter.toQuotes(timeSeries, code = "EUR")
+
+        quotes shouldHaveSize 2
+        quotes.map(RateQuote::rate) shouldBe listOf("0.89847".toBigDecimal(), "0.89158".toBigDecimal())
+    }
+
+    test("a day without the requested currency is skipped") {
+        val timeSeries = TimeSeriesDto(
+            base = "USD",
+            startDate = "2026-10-29",
+            endDate = "2026-11-02",
+            rates = mapOf(
+                "2026-10-29" to mapOf("EUR" to 0.89847),
+                "2026-10-30" to mapOf("JPY" to 157.9),
+                "2026-11-02" to mapOf("EUR" to 0.89158),
+            ),
+        )
+
+        val quotes = converter.toQuotes(timeSeries, code = "EUR")
+
+        quotes.map(RateQuote::date) shouldBe listOf(LocalDate(2026, 10, 29), LocalDate(2026, 11, 2))
+    }
+
+    test("an empty time series gives no quotes") {
+        val timeSeries = TimeSeriesDto(base = "USD", startDate = "", endDate = "", rates = emptyMap())
+
+        converter.toQuotes(timeSeries, code = "EUR").shouldBeEmpty()
+    }
+
+    test("a series without the requested currency gives no quotes") {
+        val timeSeries = TimeSeriesDto(
+            base = "USD",
+            startDate = "2026-11-02",
+            endDate = "2026-11-02",
+            rates = mapOf("2026-11-02" to mapOf("JPY" to 157.9)),
+        )
+
+        converter.toQuotes(timeSeries, code = "EUR").shouldBeEmpty()
+    }
+
+    test("quotes are sorted by date even when the input map is not") {
+        val timeSeries = TimeSeriesDto(
+            base = "USD",
+            startDate = "2026-10-29",
+            endDate = "2026-11-02",
+            rates = mapOf(
+                "2026-11-02" to mapOf("EUR" to 0.89158),
+                "2026-10-29" to mapOf("EUR" to 0.89847),
+                "2026-10-30" to mapOf("EUR" to 0.89509),
+            ),
+        )
+
+        val dates = converter.toQuotes(timeSeries, code = "EUR").map(RateQuote::date)
+
+        dates shouldBe listOf(LocalDate(2026, 10, 29), LocalDate(2026, 10, 30), LocalDate(2026, 11, 2))
+    }
+
+    test("the decimal digits of a quote are kept") {
+        val timeSeries = TimeSeriesDto(
+            base = "USD",
+            startDate = "2026-11-02",
+            endDate = "2026-11-02",
+            rates = mapOf("2026-11-02" to mapOf("EUR" to 0.89158)),
+        )
+
+        converter.toQuotes(timeSeries, code = "EUR").single().rate shouldBe "0.89158".toBigDecimal()
     }
 
 })
