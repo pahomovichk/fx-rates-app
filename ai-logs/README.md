@@ -7,7 +7,7 @@ Chats that moved into a worktree are exported once, from the copy that contains 
 | --- | --- | --- |
 | [Gradle daemon JVM](01-gradle-daemon-jvm.md) | Wednesday, Nov 4, 2026, 12:47 PM (UTC+1) | 1 |
 | [Project exploration](02-project-exploration.md) | Wednesday, Nov 4, 2026, 1:01 PM (UTC+1) | 2 |
-| [Rates list load failure](03-rates-list-load-failure.md) | Wednesday, Nov 4, 2026, 1:23 PM (UTC+1) | 6 |
+| [Rates list load failure](03-rates-list-load-failure.md) | Wednesday, Nov 4, 2026, 1:23 PM (UTC+1) | 8 |
 | [Currency details task briefing](04-task-briefing.md) | Wednesday, Nov 4, 2026, 1:30 PM (UTC+1) | 1 |
 | [Currency details plan](05-currency-details-plan.md) | Wednesday, Nov 4, 2026, 2:11 PM (UTC+1) | 5 |
 | [Data stage](06-data-stage.md) | Wednesday, Nov 4, 2026, 2:58 PM (UTC+1) | 4 |
