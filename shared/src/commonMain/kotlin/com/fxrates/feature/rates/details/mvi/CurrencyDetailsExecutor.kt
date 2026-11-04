@@ -8,12 +8,15 @@ import com.fxrates.feature.rates.details.mvi.CurrencyDetailsStore.Intent
 import com.fxrates.feature.rates.details.mvi.CurrencyDetailsStore.Label
 import com.fxrates.feature.rates.details.mvi.CurrencyDetailsStore.Message
 import com.fxrates.feature.rates.details.mvi.CurrencyDetailsStore.State
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 internal class CurrencyDetailsExecutor(
     private val repository: RatesRepository,
 ) : CoroutineExecutor<Intent, Action, State, Message, Label>() {
+
+    private var loadHistoryJob: Job? = null
 
     override fun executeAction(action: Action) = when (action) {
         is Action.LoadHistory -> loadHistory(action)
@@ -25,7 +28,8 @@ internal class CurrencyDetailsExecutor(
     }
 
     private fun loadHistory(action: Action.LoadHistory) {
-        resourceFlow { repository.getRateHistory(base = action.base, code = action.code) }
+        if (loadHistoryJob?.isActive ?: false) return
+        loadHistoryJob = resourceFlow { repository.getRateHistory(base = action.base, code = action.code) }
             .onEach { quotes -> dispatch(Message.UpdateQuotes(quotes)) }
             .launchIn(scope)
     }

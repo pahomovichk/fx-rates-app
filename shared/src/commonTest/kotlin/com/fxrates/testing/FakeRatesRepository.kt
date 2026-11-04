@@ -16,6 +16,8 @@ class FakeRatesRepository : RatesRepository {
 
     val requestedHistory = mutableListOf<Pair<String, String>>()
 
+    var awaitRateHistory: suspend () -> Unit = {}
+
     override suspend fun getLatestRates(base: String): List<CurrencyRate> {
         requestedBases += base
         return latestRates.getOrThrow()
@@ -28,6 +30,7 @@ class FakeRatesRepository : RatesRepository {
 
     override suspend fun getRateHistory(base: String, code: String): List<RateQuote> {
         requestedHistory += base to code
+        awaitRateHistory.invoke()
         return rateHistory.getOrThrow()
     }
 

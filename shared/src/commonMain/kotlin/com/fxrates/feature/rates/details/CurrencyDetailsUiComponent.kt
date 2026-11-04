@@ -2,6 +2,7 @@ package com.fxrates.feature.rates.details
 
 import com.arkivanov.decompose.ComponentContext
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
+import com.arkivanov.essenty.lifecycle.doOnDestroy
 import com.arkivanov.mvikotlin.extensions.coroutines.labels
 import com.arkivanov.mvikotlin.extensions.coroutines.states
 import com.fxrates.feature.rates.details.mvi.CurrencyDetailsStore
@@ -70,6 +71,7 @@ internal class CurrencyDetailsUiComponentDefault(
         .stateIn(scope, SharingStarted.Eagerly, CurrencyDetailsUiState())
 
     init {
+        lifecycle.doOnDestroy { store.dispose() }
         store.labels
             .onEach(::handleLabel)
             .launchIn(scope)

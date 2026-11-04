@@ -9,6 +9,7 @@ import com.fxrates.testing.rateQuote
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeInstanceOf
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -71,6 +72,25 @@ class CurrencyDetailsStoreTest : FunSpec({
         repository.requestedHistory shouldBe listOf("USD" to "EUR", "USD" to "EUR")
         store.state.quotes shouldBe Resource.Data(quotes)
         store.state.name shouldBe "Euro"
+    }
+
+    test("a refresh during a load does not start another request") {
+        val gate = CompletableDeferred<Unit>()
+        val quotes = listOf(rateQuote(rate = "1"))
+        val repository = FakeRatesRepository().apply {
+            awaitRateHistory = { gate.await() }
+            rateHistory = Result.success(quotes)
+        }
+        val store = createStore(repository)
+        store.state.quotes.shouldBeInstanceOf<Resource.Loading>()
+
+        repository.rateHistory = Result.success(listOf(rateQuote(rate = "2")))
+        store.accept(CurrencyDetailsStore.Intent.OnRefresh)
+
+        repository.requestedHistory shouldBe listOf("USD" to "EUR")
+        repository.rateHistory = Result.success(quotes)
+        gate.complete(Unit)
+        store.state.quotes shouldBe Resource.Data(quotes)
     }
 
     test("an empty history stays data") {
