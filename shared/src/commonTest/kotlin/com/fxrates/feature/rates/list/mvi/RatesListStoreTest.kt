@@ -67,16 +67,16 @@ class RatesListStoreTest : FunSpec({
         store.state.query shouldBe "eu"
     }
 
-    test("a currency click opens the currency with the current base") {
+    test("a currency click opens the currency with the current base and the clicked name") {
         runTest(testDispatcher) {
             val store = createStore(FakeRatesRepository())
             var label: RatesListStore.Label? = null
             val job = launch { label = store.labels.first() }
 
-            store.accept(RatesListStore.Intent.OnCurrencyClick("EUR"))
+            store.accept(RatesListStore.Intent.OnCurrencyClick(code = "EUR", name = "Euro"))
             job.join()
 
-            label shouldBe RatesListStore.Label.OpenCurrency(base = "USD", code = "EUR")
+            label shouldBe RatesListStore.Label.OpenCurrency(base = "USD", code = "EUR", name = "Euro")
         }
     }
 

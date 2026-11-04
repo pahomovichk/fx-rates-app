@@ -51,7 +51,7 @@ private fun RatesListUiContent(
     state: RatesListUiState,
     onRefresh: () -> Unit,
     onQueryChange: (String) -> Unit,
-    onCurrencyClick: (String) -> Unit,
+    onCurrencyClick: (String, String) -> Unit,
     modifier: Modifier = Modifier,
 ) = Column(
     modifier = modifier
@@ -111,10 +111,10 @@ private fun Header(
 @Composable
 private fun RateList(
     items: List<RateItem>,
-    onCurrencyClick: (String) -> Unit,
+    onCurrencyClick: (String, String) -> Unit,
 ) = LazyColumn(modifier = Modifier.fillMaxSize()) {
     items(items = items, key = RateItem::code) { item ->
-        RateRow(item = item, onClick = { onCurrencyClick.invoke(item.code) })
+        RateRow(item = item, onClick = { onCurrencyClick.invoke(item.code, item.name) })
         HorizontalDivider()
     }
 }
@@ -179,6 +179,6 @@ private fun RatesListUiContentPreview(
         state = state,
         onRefresh = {},
         onQueryChange = {},
-        onCurrencyClick = {},
+        onCurrencyClick = { _, _ -> },
     )
 }

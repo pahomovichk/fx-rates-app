@@ -27,7 +27,7 @@ abstract class RatesListUiComponent {
 
     internal abstract fun onQueryChange(query: String)
 
-    internal abstract fun onCurrencyClick(code: String)
+    internal abstract fun onCurrencyClick(code: String, name: String)
 
 }
 
@@ -54,7 +54,7 @@ internal class RatesListUiComponentDefault(
 
     interface Callbacks {
 
-        fun onOpenCurrency(base: String, code: String)
+        fun onOpenCurrency(base: String, code: String, name: String)
 
     }
 
@@ -75,7 +75,11 @@ internal class RatesListUiComponentDefault(
 
     private fun handleLabel(label: RatesListStore.Label) {
         when (label) {
-            is RatesListStore.Label.OpenCurrency -> callbacks.onOpenCurrency(base = label.base, code = label.code)
+            is RatesListStore.Label.OpenCurrency -> callbacks.onOpenCurrency(
+                base = label.base,
+                code = label.code,
+                name = label.name,
+            )
         }
     }
 
@@ -87,8 +91,8 @@ internal class RatesListUiComponentDefault(
         store.accept(RatesListStore.Intent.OnQueryChange(query))
     }
 
-    override fun onCurrencyClick(code: String) {
-        store.accept(RatesListStore.Intent.OnCurrencyClick(code))
+    override fun onCurrencyClick(code: String, name: String) {
+        store.accept(RatesListStore.Intent.OnCurrencyClick(code = code, name = name))
     }
 
 }

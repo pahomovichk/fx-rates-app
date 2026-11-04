@@ -15,7 +15,7 @@ internal class RatesListStore(
 
         data class OnQueryChange(val query: String) : Intent()
 
-        data class OnCurrencyClick(val code: String) : Intent()
+        data class OnCurrencyClick(val code: String, val name: String) : Intent()
 
     }
 
@@ -35,7 +35,7 @@ internal class RatesListStore(
 
     sealed class Label {
 
-        data class OpenCurrency(val base: String, val code: String) : Label()
+        data class OpenCurrency(val base: String, val code: String, val name: String) : Label()
 
     }
 

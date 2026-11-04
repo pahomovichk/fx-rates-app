@@ -22,7 +22,9 @@ internal class RatesListExecutor(
     override fun executeIntent(intent: Intent) = when (intent) {
         is Intent.OnRefresh -> forward(Action.LoadRates(base = state().base))
         is Intent.OnQueryChange -> dispatch(Message.UpdateQuery(intent.query))
-        is Intent.OnCurrencyClick -> publish(Label.OpenCurrency(base = state().base, code = intent.code))
+        is Intent.OnCurrencyClick -> publish(
+            Label.OpenCurrency(base = state().base, code = intent.code, name = intent.name),
+        )
     }
 
     private fun loadRates(action: Action.LoadRates) {
