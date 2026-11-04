@@ -39,7 +39,7 @@ class RatesListStoreTest : FunSpec({
     }
 
     test("the rates are loaded for the base currency on start") {
-        val repository = FakeRatesRepository().apply { currentRates = Result.success(listOf(currencyRate())) }
+        val repository = FakeRatesRepository().apply { latestRates = Result.success(listOf(currencyRate())) }
 
         val store = createStore(repository)
 
@@ -48,11 +48,11 @@ class RatesListStoreTest : FunSpec({
     }
 
     test("a failed load ends in an error and a refresh loads again") {
-        val repository = FakeRatesRepository().apply { currentRates = Result.failure(IllegalStateException("offline")) }
+        val repository = FakeRatesRepository().apply { latestRates = Result.failure(IllegalStateException("offline")) }
         val store = createStore(repository)
         store.state.rates.shouldBeInstanceOf<Resource.Error>()
 
-        repository.currentRates = Result.success(listOf(currencyRate()))
+        repository.latestRates = Result.success(listOf(currencyRate()))
         store.accept(RatesListStore.Intent.OnRefresh)
 
         repository.requestedBases shouldBe listOf("USD", "USD")

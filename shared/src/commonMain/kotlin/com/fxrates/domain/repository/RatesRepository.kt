@@ -5,7 +5,10 @@ import com.fxrates.domain.model.RateQuote
 
 interface RatesRepository {
 
-    /** The latest rates of every supported currency against [base], sorted by code. */
+    /**
+     * The latest rates of every supported currency against [base], sorted by code.
+     * If the time-series window cannot be loaded, the current working day's rates are used instead.
+     */
     suspend fun getLatestRates(base: String): List<CurrencyRate>
 
     /** The current working day's rates of every supported currency against [base], sorted by code. */

@@ -4,6 +4,7 @@ import com.fxrates.data.remote.FrankfurterApi
 import com.fxrates.domain.model.CurrencyRate
 import com.fxrates.domain.model.RateQuote
 import com.fxrates.domain.repository.RatesRepository
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.datetime.DatePeriod
@@ -21,7 +22,17 @@ class RatesRepositoryImpl(
     private val clock: Clock,
 ) : RatesRepository {
 
-    override suspend fun getLatestRates(base: String): List<CurrencyRate> = coroutineScope {
+    override suspend fun getLatestRates(base: String): List<CurrencyRate> {
+        return try {
+            ratesFromTimeSeries(base)
+        } catch (exception: CancellationException) {
+            throw exception
+        } catch (@Suppress("TooGenericExceptionCaught", "SwallowedException") exception: Exception) {
+            getCurrentRates(base)
+        }
+    }
+
+    private suspend fun ratesFromTimeSeries(base: String): List<CurrencyRate> = coroutineScope {
         // A week back always holds at least two business days, even around long holidays.
         val start = clock.todayIn(TimeZone.UTC).minus(DatePeriod(days = LOOKBACK_DAYS))
         val currencies = async { api.getCurrencies() }

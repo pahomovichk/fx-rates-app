@@ -28,7 +28,7 @@ internal class RatesListExecutor(
     }
 
     private fun loadRates(action: Action.LoadRates) {
-        resourceFlow { repository.getCurrentRates(base = action.base) }
+        resourceFlow { repository.getLatestRates(base = action.base) }
             .onEach { rates -> dispatch(Message.UpdateRates(rates)) }
             .launchIn(scope)
     }
